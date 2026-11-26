@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          String       @id @default(cuid())
+  email       String       @unique
+  name        String?
+  image       String?
+
+  collections Collection[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Collection {
+  id            String @id @default(cuid())
+
+  name          String
+  description   String?
+  type          String
+
+  visibility    String @default("private")
+
+  coverImageUrl String?
+
+  ownerId       String
+  owner         User @relation(fields: [ownerId], references: [id])
+
+  items         CollectionItem[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model CollectionItem {
+  id                String @id @default(cuid())
+
+  collectionId      String
+  collection        Collection @relation(fields: [collectionId], references: [id])
+
+  name              String
+  description       String?
+
+  imageUrl          String?
+  thumbnailUrl      String?
+
+  category          String?
+  subcategory       String?
+
+  acquisitionDate   DateTime?
+  acquisitionSource String?
+
+  acquisitionPrice  Decimal? @db.Decimal(10,2)
+  estimatedValue    Decimal? @db.Decimal(10,2)
+
+  condition         String?
+  quantity          Int @default(1)
+
+  status            String @default("owned")
+
+  location          String?
+  notes             String?
+
+  favorite          Boolean @default(false)
+
+  barcode           String?
+  externalReference String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  attributes        ItemAttribute[]
+  media             ItemMedia[]
+}
+
+model ItemAttribute {
+  id         String @id @default(cuid())
+
+  itemId     String
+  item       CollectionItem @relation(fields: [itemId], references: [id])
+
+  key        String
+  value      String
+  valueType  String
+
+  createdAt  DateTime @default(now())
+}
+
+model ItemMedia {
+  id         String @id @default(cuid())
+
+  itemId     String
+  item       CollectionItem @relation(fields: [itemId], references: [id])
+
+  imageUrl   String
+  caption    String?
+
+  sortOrder  Int @default(0)
+
+  createdAt  DateTime @default(now())
+}
